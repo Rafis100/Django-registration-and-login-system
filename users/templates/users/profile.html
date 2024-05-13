@@ -1,44 +1,109 @@
-{% extends "users/base.html" %}
-{% block title %}Profile Page{% endblock title %}
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}
+  Профиль
+{% endblock %}
 {% block content %}
-    <div class="row my-3 p-3">
-        <img class="rounded-circle account-img" src="{{ user.profile.avatar.url }} " style="cursor: pointer;"/>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  {% if user_form.errors %}
+    <div class="alert alert-danger alert-dismissible" role="alert">
+      <div id="form_errors">
+        {% for key, value in user_form.errors.items %}
+          <strong>{{ value }}</strong>
+        {% endfor %}
+      </div>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
-    {% if user_form.errors %}
-        <div class="alert alert-danger alert-dismissible" role="alert">
-            <div id="form_errors">
-                {% for key, value in user_form.errors.items %}
-                    <strong>{{ value }}</strong>
-                {% endfor %}
+  {% endif %}
+
+  <div class="container">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="flex profile-main">
+        <div class="">
+          <div class="left-block">
+            <div class="profile-picture">
+              <img class="rounded-circle account-img pict-avatar" src="{{ user.profile.avatar.url }}" style="cursor: pointer;" />
+              {{ profile_form.avatar }}
             </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <div class="elem">Подписчики: {{ user.profile.count_subscriptions }}
+              Подписки: {{ user.profile.count_subscribers }}</div>
+            <div class="elem">
+              <label>Имя пользователя:</label>
+              {{ user.username }}
+            </div>
+            <div class="elem">
+              <label>Email:</label>
+              <div class="flex">
+                <img src="{% static 'img/icons8-почта-50 1.svg' %}" alt="" />
+                {{ user_form.email }}
+              </div>
+            </div>
+            <div class="elem">
+              <label>Номер телефона:</label>
+              <div class="flex">
+                <img src="{% static 'img/free-icon-telephone-5037238 1.svg' %}" alt="" />
+                {{ profile_form.telephone }}
+              </div>
+            </div>
+          </div>
+
+          <div class="block">
+            <a href="{% url 'upload-project' %}">
+              <div class="upload-proj">
+                <img src="{% static 'img/Group 42.svg' %}" alt="">
+                <p>Загрузить проект</p>
+              </div>
+            </a>
+            <div class="">
+              <label>Сделать репозиторий видимым</label>
+              {{ profile_form.is_visible_repository }}
+            </div>
+            <div>
+              <a href="{% url 'my-projects' %}">Посмотреть проекты</a>
+            </div>
+          </div>
         </div>
-    {% endif %}
-    <div class="form-content">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-row">
-                <div class="col-md-5">
-                    <div class="form-group">
-                        <label class="small mb-1">Username:</label>
-                            {{ user_form.username }}
-                        <label class="small mb-1">Email:</label>
-                            {{ user_form.email }}
-                    </div>
-                    <div class="form-group">
-                        <a href="{% url 'password_change' %}">Change Password</a>
-                        <hr>
-                        <label class="small mb-1">Change Avatar:</label>
-                        {{ profile_form.avatar }}
-                    </div>
-                    <label class="small mb-1">Bio:</label> {{ profile_form.bio }}
-                </div>
-            </div>
-            <br><br>
-            <button type="submit" class="btn btn-dark btn-lg">Save Changes</button>
-            <button type="reset" class="btn btn-dark btn-lg">Reset</button>
-        </form>
-    </div>
-{% endblock content %}
+        <div class="right">
+          <div class="block">
+            <p>Языки программирования</p>
+            {{ profile_form.programming_languages }}
+
+            <p>Дополнительные инструменты</p>
+            {{ profile_form.additional_tools }}
+          </div>
+          <div class="block">
+            <label>Hard-Skills</label>
+            {{ profile_form.hard_skills }}
+          </div>
+          <div class="block">
+            <label>Soft-Skills</label>
+            {{ profile_form.soft_skills }}
+          </div>
+          <div class="block">
+            <label>Опыт</label>
+            {{ profile_form.experience }}
+          </div>
+          <div class="block">
+            <label>Участие в хакатонах</label>
+            {{ profile_form.hackathons }}
+          </div>
+          <div class="block">
+            <label>Опыт в написании статей</label>
+            {{ profile_form.articles }}
+          </div>
+          <div class="block">
+            <label>Уровень владения иностранным языком</label>
+            {{ profile_form.foreign_language }}
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-dark btn-lg">Save Changes</button>
+      <button type="reset" class="btn btn-dark btn-lg">Reset</button>
+      <div>
+        <a href="{% url 'password_change' %}">Сменить пароль</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}
+  Загрузка проекта
+{% endblock %}
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div>
+      название проекта
+      {{ project_form.project_name}}
+    </div>
+    <div>
+      описание
+      {{ project_form.description}}
+    </div>
+    <div>
+      языки программирования
+      {{ project_form.programming_languages}}
+    </div>
+    <div>
+      доп инструменты
+      {{ project_form.additional_tools}}
+    </div>
+    <div>
+      файлы
+      {{ files_form.files }}
+    </div>
+    
+    <button type="submit">Сохранить</button>
+  </form>
+{% endblock %}

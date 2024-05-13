@@ -1,3 +1,5 @@
+from django.contrib.auth.forms import AuthenticationForm
+from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView
@@ -5,8 +7,10 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.contrib.auth.decorators import login_required
+from .models import ProjectFile, Project
+from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm, ProjectForm, ProjectFilesForm
 
-from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm
+
 
 
 def home(request):
@@ -17,6 +21,13 @@ class RegisterView(View):
     form_class = RegisterForm
     initial = {'key': 'value'}
     template_name = 'users/register.html'
+    error_messages = {
+        'invalid_login': (
+            "Please enter a co "
+            "fields may be case-sensitive."
+        ),
+        'inactive': ("This account is inactiйцуve."),
+    }
 
     def dispatch(self, request, *args, **kwargs):
         # will redirect to the home page if a user tries to access the register page while logged in
@@ -37,7 +48,7 @@ class RegisterView(View):
             form.save()
 
             username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}')
+            messages.success(request, f'Аккаунт создан {username}')
 
             return redirect(to='login')
 
@@ -61,7 +72,6 @@ class CustomLoginView(LoginView):
         # else browser session will be as long as the session cookie time "SESSION_COOKIE_AGE" defined in settings.py
         return super(CustomLoginView, self).form_valid(form)
 
-
 class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
     template_name = 'users/password_reset.html'
     email_template_name = 'users/password_reset_email.html'
@@ -75,7 +85,7 @@ class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
 
 class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
     template_name = 'users/change_password.html'
-    success_message = "Successfully Changed Your Password"
+    success_message = "Ваш пароль учаешно изменен"
     success_url = reverse_lazy('users-home')
 
 
@@ -84,14 +94,62 @@ def profile(request):
     if request.method == 'POST':
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
-
+        
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, 'Your profile is updated successfully')
+            messages.success(request, 'Данныеу успесшно изменены')
+            return redirect(to='users-profile')
+        else:
+            messages.error(request, 'Пожалуйста, вводите данные корреектно')
             return redirect(to='users-profile')
     else:
         user_form = UpdateUserForm(instance=request.user)
         profile_form = UpdateProfileForm(instance=request.user.profile)
 
     return render(request, 'users/profile.html', {'user_form': user_form, 'profile_form': profile_form})
+
+@login_required
+def project(request):
+    if request.method == 'POST': 
+        project_form = ProjectForm(request.POST)
+        files_form = ProjectFilesForm(request.POST, request.FILES)
+        if project_form.is_valid() and files_form.is_valid():
+            project = project_form.save(commit=False)
+            project.user = request.user
+            project.save()
+            for file in files_form.files.getlist("files"):
+                ProjectFile.objects.create(
+                    project=project, file=file
+                )
+            messages.success(request, 'Проект успесшно сохранен')
+            return redirect(to='users-profile')
+        else:
+            messages.error(request, 'Пожалуйста, вводите данные корреектно')
+            return redirect(to='upload-project')
+    else:
+        project_form = ProjectForm()
+        files_form = ProjectFilesForm()
+    
+    return render(request, 'users/upload-project.html', {'project_form': project_form, 'files_form': files_form})
+
+@login_required
+def my_projects(request):
+    projects = Project.objects.filter(user=request.user)
+    return render(request, 'users/show-my-projects.html', {'projects': projects})
+
+
+@login_required
+def edit_project(request: HttpRequest, project_id):
+    project = Project.objects.get(pk=project_id)
+    files = project.project_files.all()
+    files_res = []
+    for f in files:
+        print(f)
+    project_form = ProjectForm(instance=project)
+    files_form = ProjectFilesForm()
+    
+    return render(request, 'users/qwe.html', {'project_form': project_form, 'files_form': files_form, 'files_res': files_res})
+
+
+

@@ -1,0 +1,13 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}
+  Home Page
+{% endblock %}
+{% block content %}
+
+  {{ project_form.as_p }}
+  {% for file in files_res %}
+    <div>{{file.file.name}}</div>
+  {% endfor %}
+
+{% endblock %}

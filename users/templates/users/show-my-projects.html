@@ -1,0 +1,18 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% block title %}
+  Home Page
+{% endblock %}
+{% block content %}
+  
+    <div>
+        {% for project in projects %}
+            <div>{{project.project_name}}</div>
+            <a href="{% url 'edit-project' project_id=project.pk %}">
+                <div>Редактировать</div>
+            </a>
+        {% endfor %}
+    </div>
+  
+{% endblock content %}
+ 
